@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:seek="http://schemas.android.com/apk/res/com.seek.tabhostview">
+    <item seek:state_choose ="false" android:drawable="@drawable/tab_me_nom"></item>
+    <item seek:state_choose ="true" android:drawable="@drawable/tab_me_sel"></item>
+</selector>
