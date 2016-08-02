@@ -1,8 +1,10 @@
 package com.seek.tabhostview;
 
 import android.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +24,10 @@ public class MainActivity extends AppCompatActivity implements TabHostView.TabDa
         for (int i=0;i<3;i++){
             fragments.add(TestFragment.newInstance("hi,i am fragment "+i));
         }
-        tabHostView.addFragments(R.id.container,fragments,this);
+        tabHostView.addFragments(R.id.container,fragments).setItemRes(new int[]{R.drawable.tab_cap_nom,R.drawable.tab_discover_nom,R.drawable.tab_me_nom},
+                new int[]{R.drawable.tab_cap_sel,R.drawable.tab_discover_sel,R.drawable.tab_me_sel},getResources().getStringArray(R.array.tabStrs)).creatItems();
         tabHostView.setTabTextSize(14);
+        tabHostView.setPoint(0);
     }
 
     @Override

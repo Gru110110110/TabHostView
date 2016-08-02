@@ -2,8 +2,18 @@ package com.seek.tabhostview;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
+import android.telecom.PhoneAccount;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -13,7 +23,7 @@ import android.widget.TextView;
 /**
  * Created by ASUS on 2016/4/26.
  */
-public class TabItemView extends LinearLayout implements View.OnClickListener {
+public class TabItemView extends LinearLayout{
 
     private int[] addAttrs = new int[]{R.attr.state_choose};
 
@@ -23,7 +33,17 @@ public class TabItemView extends LinearLayout implements View.OnClickListener {
 
     private ImageView tabImageView;
 
-    private OnClickListener delegateClickListener;
+    private boolean point = false;
+
+    private int pointRadius = 8;
+
+
+    public void setShowMode(ShowMode showMode) {
+        this.showMode = showMode;
+        showByMode(showMode);
+    }
+
+    private ShowMode showMode = ShowMode.NORMAL;
 
     public TabItemView(Context context) {
         this(context, null);
@@ -34,7 +54,6 @@ public class TabItemView extends LinearLayout implements View.OnClickListener {
         setWillNotDraw(false);
         setOrientation(VERTICAL);
         setGravity(Gravity.CENTER);
-        setOnClickListener(this);
         initChildView();
     }
 
@@ -51,6 +70,34 @@ public class TabItemView extends LinearLayout implements View.OnClickListener {
         addView(tabTextView);
     }
 
+    /**
+     * if true ,show the red point
+     * @param point
+     */
+    public void setPoint(boolean point) {
+        this.point = point;
+        invalidate();
+    }
+
+    public void setPoint() {
+        setPoint(true);
+    }
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawPoint(canvas);
+    }
+
+    private void drawPoint(Canvas canvas) {
+        if (point) {
+            canvas.save();
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(Color.RED);
+            canvas.drawCircle(getWidth() / 2 + tabImageView.getWidth() / 2, getHeight() / 2 - tabImageView.getHeight() / 2, pointRadius, paint);
+            canvas.restore();
+        }
+    }
+
     public void setTextSize(float textSize) {
         tabTextView.setTextSize(textSize);
     }
@@ -59,11 +106,22 @@ public class TabItemView extends LinearLayout implements View.OnClickListener {
         tabImageView.setImageResource(resId);
     }
 
+    public void setIconDrawable(Drawable drawable) {
+        tabImageView.setImageDrawable(drawable);
+    }
+
     public void setTextColor(ColorStateList colors) {
         tabTextView.setTextColor(colors);
     }
 
     public void setText(CharSequence text) {
+        if (TextUtils.isEmpty(text)) {
+            tabTextView.setVisibility(GONE);
+            return;
+        }
+        tabTextView.setText(text);
+    }
+    public void setText(int text) {
         tabTextView.setText(text);
     }
 
@@ -74,7 +132,20 @@ public class TabItemView extends LinearLayout implements View.OnClickListener {
     public void setChoose(boolean choose) {
         if (this.choose != choose) {
             this.choose = choose;
+            showByMode(showMode);
             refreshDrawableState();
+        }
+    }
+
+    private void showByMode(ShowMode showMode) {
+        if (showMode==ShowMode.NORMAL){
+            tabTextView.setVisibility(VISIBLE);
+        }else if (showMode==ShowMode.RAISE){
+            if (choose){
+                tabTextView.setVisibility(VISIBLE);
+            }else{
+                tabTextView.setVisibility(GONE);
+            }
         }
     }
 
@@ -88,24 +159,7 @@ public class TabItemView extends LinearLayout implements View.OnClickListener {
         }
     }
 
-    @Override
-    public void onClick(View v) {
-        setChoose(true);
-        if (null != delegateClickListener) delegateClickListener.onClick(v);
-    }
-
-    /**
-     * use setDelegateClickListener(OnClickListener delegateClickListener)
-     *
-     * @param l
-     */
-    @Deprecated
-    @Override
-    public void setOnClickListener(OnClickListener l) {
-        super.setOnClickListener(l);
-    }
-
-    public void setDelegateClickListener(OnClickListener delegateClickListener) {
-        this.delegateClickListener = delegateClickListener;
+    public enum ShowMode{
+        NORMAL,RAISE;
     }
 }
