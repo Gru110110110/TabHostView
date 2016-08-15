@@ -6,15 +6,18 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.telecom.PhoneAccount;
+import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -37,6 +40,14 @@ public class TabItemView extends LinearLayout{
 
     private int pointRadius = 8;
 
+    private Paint mTextPaint;
+
+    private Paint mPaint;
+
+    private int msgCount;
+
+    private RectF ovalText;
+
 
     public void setShowMode(ShowMode showMode) {
         this.showMode = showMode;
@@ -55,6 +66,16 @@ public class TabItemView extends LinearLayout{
         setOrientation(VERTICAL);
         setGravity(Gravity.CENTER);
         initChildView();
+        initPaint();
+    }
+
+    private void initPaint() {
+        mPaint  = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setColor(Color.RED);
+        mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mTextPaint.setColor(Color.WHITE);
+        mTextPaint.setTextSize(18);
+        ovalText = new RectF();
     }
 
     private void initChildView() {
@@ -80,22 +101,42 @@ public class TabItemView extends LinearLayout{
     }
 
     public void setPoint() {
+        msgCount = 0;
         setPoint(true);
     }
+
+    public void setMsgCount(int msgCount){
+        this.msgCount = msgCount;
+        setPoint(false);
+    }
+
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
         drawPoint(canvas);
+        drawMsgCount(canvas,msgCount);
     }
 
     private void drawPoint(Canvas canvas) {
         if (point) {
             canvas.save();
-            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            paint.setColor(Color.RED);
-            canvas.drawCircle(getWidth() / 2 + tabImageView.getWidth() / 2, getHeight() / 2 - tabImageView.getHeight() / 2, pointRadius, paint);
+            canvas.drawCircle(getWidth() / 2 + tabImageView.getWidth() / 2, getHeight() / 2 - tabImageView.getHeight() / 2, pointRadius, mPaint);
             canvas.restore();
         }
+    }
+
+    private void drawMsgCount(Canvas canvas,int msgCount){
+        if (msgCount<0) throw new IllegalArgumentException("message count can't be a negative number");
+        if (msgCount==0) return;
+        String msgText = String.valueOf(msgCount);
+        if (msgCount>99) msgText = "99+";
+        Paint.FontMetrics fontMetrics = mTextPaint.getFontMetrics();
+        float fontHeight = (fontMetrics.leading+fontMetrics.ascent+fontMetrics.descent);
+        float fontWidth = mTextPaint.measureText("9");
+        fontWidth = fontWidth>fontHeight?fontWidth:fontWidth;
+        canvas.drawCircle(getWidth() / 2 + tabImageView.getWidth() / 2, getHeight() / 2 - tabImageView.getHeight() / 2, fontWidth*1.4f, mPaint);
+        fontWidth = mTextPaint.measureText(msgText);
+        canvas.drawText(msgText,(getWidth() / 2 + tabImageView.getWidth() / 2-fontWidth/2),(getHeight() / 2 - tabImageView.getHeight() / 2-fontHeight/2),mTextPaint);
     }
 
     public void setTextSize(float textSize) {
@@ -161,5 +202,13 @@ public class TabItemView extends LinearLayout{
 
     public enum ShowMode{
         NORMAL,RAISE;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction()==MotionEvent.ACTION_DOWN){
+
+        }
+        return super.onTouchEvent(event);
     }
 }

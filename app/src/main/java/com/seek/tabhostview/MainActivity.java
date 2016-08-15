@@ -27,7 +27,9 @@ public class MainActivity extends AppCompatActivity implements TabHostView.TabDa
         tabHostView.addFragments(R.id.container,fragments).setItemRes(new int[]{R.drawable.tab_cap_nom,R.drawable.tab_discover_nom,R.drawable.tab_me_nom},
                 new int[]{R.drawable.tab_cap_sel,R.drawable.tab_discover_sel,R.drawable.tab_me_sel},getResources().getStringArray(R.array.tabStrs)).creatItems();
         tabHostView.setTabTextSize(14);
-        tabHostView.setPoint(0);
+        tabHostView.setPoint(1);
+        tabHostView.setMsgCount(0,5);
+        tabHostView.setMsgCount(2,88);
     }
 
     @Override

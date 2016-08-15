@@ -279,6 +279,17 @@ public class TabHostView extends LinearLayout{
         child.setPoint();
     }
 
+    /**
+     * show unread msg count
+     * @param position
+     * @param msgCount
+     */
+    public void setMsgCount(int position,int msgCount){
+        if (position<0||position>tabCount-1) return;
+        TabItemView child = (TabItemView) getChildAt(position);
+        child.setMsgCount(msgCount);
+    }
+
 
     /**
      * if the mode is ShowMode.RAISE,then only the choosed item show the text
