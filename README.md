@@ -1,6 +1,6 @@
 # TabHostView
 a simple TabHostView for android
-![](http://img.my.csdn.net/uploads/201604/30/1461997808_1287.png)
+![](https://github.com/pruas/TabHostView/blob/master/app/src/main/java/example.png)
 #usage
 ##1、created by xml like:
 ```xml
