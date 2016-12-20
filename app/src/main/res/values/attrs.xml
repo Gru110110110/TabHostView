@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <declare-styleable name="TabItemView">
-        <attr name="state_choose" format="boolean"></attr>
-    </declare-styleable>
-
     <declare-styleable name="TabHostView">
         <attr name="dividerWidth" format="dimension"></attr>
         <attr name="dividerColor" format="color"></attr>
         <attr name="dividerEnabled" format="boolean"></attr>
         <attr name="topLineColor" format="color"></attr>
-        <attr name="topLineHeigh" format="dimension"></attr>
+        <attr name="topLineHeight" format="dimension"></attr>
         </declare-styleable>
 </resources>

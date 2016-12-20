@@ -1,9 +1,5 @@
 package com.seek.tabhostview;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
@@ -15,6 +11,10 @@ import android.graphics.drawable.StateListDrawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.IdRes;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -27,91 +27,84 @@ import java.util.List;
 /**
  * Created by ASUS on 2016/4/26.
  */
-public class TabHostView extends LinearLayout{
+public class TabHostView extends LinearLayout {
 
 
+    private static final int[] SYS_ATTRS = new int[]{
+            android.R.attr.textSize,
+            android.R.attr.textColor,
+            android.R.attr.dividerPadding,
+            android.R.attr.drawablePadding
+    };
+    private final FragmentManager mFragmentManager;
     private Paint dividerPaint;
-
     private int tabCount = 0;
-
     private int dividerWidth = 1;
     private int tabTextSize = 12;
     private ColorStateList tabTextColor;
     private int dividerColor = Color.GRAY;
-
     private int topLineColor = Color.GRAY;
-    private int topLineHeigh = 1;
-
+    private int topLineHeight = 1;
     private int dividerPadding = 5;
-
-    private LinearLayout.LayoutParams defaultTabLayoutParams;
-
+    private LayoutParams defaultTabLayoutParams;
     /**
      * If you wanna the divide for tab, you must set it to true
      */
     private boolean dividerEnabled = false;
-
     private int itemPadding = 5;
 
-    private static final int[] SYS_ATTRS = new int[] {
-            android.R.attr.textSize,
-            android.R.attr.textColor,
-            android.R.attr.dividerPadding
-    };
-
     private int currentPosition = 0;
-
     private List<Fragment> fragments = null;
-
     private int containerViewId;
-
-    private Context context;
-
     private Fragment preFragment = null;
-
     private OnItemClickListener onItemClickListener;
     private int[] itemDrawableNormal = null;
     private int[] itemDrawableChoose = null;
     private String[] itemStr = null;
 
     public TabHostView(Context context) {
-        this(context,null);
+        this(context, null);
     }
 
     @SuppressWarnings("ResourceType")
     public TabHostView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.context =context;
+        mFragmentManager = ((AppCompatActivity) context).getSupportFragmentManager();
         setWillNotDraw(false);
         setOrientation(HORIZONTAL);
         DisplayMetrics dm = getResources().getDisplayMetrics();
         dividerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dividerWidth, dm);
         dividerPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dividerPadding, dm);
-        topLineHeigh = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topLineHeigh, dm);
+        topLineHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topLineHeight, dm);
         itemPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, itemPadding, dm);
         // get system attrs (android:textSize and android:textColor and android:dividerPadding)
         TypedArray typedArray = context.obtainStyledAttributes(attrs, SYS_ATTRS);
         tabTextSize = typedArray.getDimensionPixelSize(0, tabTextSize);
         tabTextColor = typedArray.getColorStateList(1);
-        dividerPadding = typedArray.getDimensionPixelSize(2,dividerPadding);
+        dividerPadding = typedArray.getDimensionPixelSize(2, dividerPadding);
         typedArray.recycle();
 
         // get custom attrs
-        typedArray = context.obtainStyledAttributes(attrs,R.styleable.TabHostView);
-        dividerWidth = typedArray.getDimensionPixelSize(R.styleable.TabHostView_dividerWidth,dividerWidth);
-        dividerEnabled = typedArray.getBoolean(R.styleable.TabHostView_dividerEnabled,dividerEnabled);
-        dividerColor = typedArray.getColor(R.styleable.TabHostView_dividerColor,dividerColor);
-        topLineColor = typedArray.getColor(R.styleable.TabHostView_topLineColor,topLineColor);
-        topLineHeigh = typedArray.getDimensionPixelSize(R.styleable.TabHostView_topLineHeigh,topLineHeigh);
+        typedArray = context.obtainStyledAttributes(attrs, R.styleable.TabHostView);
+        dividerWidth = typedArray.getDimensionPixelSize(R.styleable.TabHostView_dividerWidth, dividerWidth);
+        dividerEnabled = typedArray.getBoolean(R.styleable.TabHostView_dividerEnabled, dividerEnabled);
+        dividerColor = typedArray.getColor(R.styleable.TabHostView_dividerColor, dividerColor);
+        topLineColor = typedArray.getColor(R.styleable.TabHostView_topLineColor, topLineColor);
+        topLineHeight = typedArray.getDimensionPixelSize(R.styleable.TabHostView_topLineHeigh, topLineHeight);
         typedArray.recycle();
 
         dividerPaint = new Paint();
         dividerPaint.setAntiAlias(true);
 
-        defaultTabLayoutParams = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1.0f);
+        defaultTabLayoutParams = new LayoutParams(0, LayoutParams.MATCH_PARENT, 1.0f);
 
         //default
         setOnItemClickListener(new DefaultOnItemClickListener());
+    }
+
+    //
+    private static String makeFragmentName(int viewId, long id) {
+        return "android:switcher:" + viewId + ":" + id;
     }
 
     @Override
@@ -121,28 +114,30 @@ public class TabHostView extends LinearLayout{
             return;
         }
         dividerPaint.setColor(topLineColor);
-        dividerPaint.setStrokeWidth(topLineHeigh);
-        canvas.drawRect(0, 0, getWidth(), topLineHeigh, dividerPaint);
-        if (dividerEnabled){
+        dividerPaint.setStrokeWidth(topLineHeight);
+        canvas.drawRect(0, 0, getWidth(), topLineHeight, dividerPaint);
+        if (dividerEnabled) {
             dividerPaint.setColor(dividerColor);
             dividerPaint.setStrokeWidth(dividerWidth);
-            for (int i =0;i<tabCount-1;i++){
+            for (int i = 0; i < tabCount - 1; i++) {
                 View tab = getChildAt(i);
-                canvas.drawLine(tab.getRight(), dividerPadding, tab.getRight(), getHeight() - dividerPadding, dividerPaint);
+                canvas.drawLine(tab.getRight(), dividerPadding, tab.getRight(), getHeight() - dividerPadding,
+                        dividerPaint);
             }
         }
     }
 
     /**
-     * another way to creat items
+     * another way to create items
+     *
      * @param containerViewId
      * @param fragments
      * @param tabDataProvider
      */
-    public void addFragments(@IdRes int containerViewId,List<Fragment> fragments,TabDataProvider tabDataProvider){
+    public void addFragments(@IdRes int containerViewId, List<Fragment> fragments, TabDataProvider tabDataProvider) {
         this.containerViewId = containerViewId;
         this.fragments = fragments;
-        if (containerViewId == -1 || fragments == null||tabDataProvider==null) {
+        if (containerViewId == -1 || fragments == null || tabDataProvider == null) {
             return;
         }
         tabCount = fragments.size();
@@ -152,11 +147,12 @@ public class TabHostView extends LinearLayout{
 
     /**
      * step 1
+     *
      * @param containerViewId
      * @param fragments
      * @return
      */
-    public TabHostView addFragments(@IdRes int containerViewId, List<Fragment> fragments){
+    public TabHostView addFragments(@IdRes int containerViewId, List<Fragment> fragments) {
         this.containerViewId = containerViewId;
         this.fragments = fragments;
         return this;
@@ -164,12 +160,13 @@ public class TabHostView extends LinearLayout{
 
     /**
      * step 2
+     *
      * @param itemDrawableNormal
      * @param itemDrawableChoose
      * @param itemStrs
      * @return
      */
-    public TabHostView setItemRes(int[] itemDrawableNormal,int[] itemDrawableChoose,String[] itemStrs ){
+    public TabHostView setItemRes(int[] itemDrawableNormal, int[] itemDrawableChoose, String[] itemStrs) {
         this.itemDrawableNormal = itemDrawableNormal;
         this.itemDrawableChoose = itemDrawableChoose;
         this.itemStr = itemStrs;
@@ -179,44 +176,46 @@ public class TabHostView extends LinearLayout{
     /**
      * step 3
      */
-    public void creatItems(){
-        if (fragments==null||fragments.size()==0) return;
+    public void createItems() {
+        if (fragments == null || fragments.size() == 0) return;
         tabCount = fragments.size();
         showFragment();
-        notifyDataChange(itemDrawableNormal,itemDrawableChoose,itemStr);
+        notifyDataChange(itemDrawableNormal, itemDrawableChoose, itemStr);
     }
 
-    private StateListDrawable makeDrawable(int normal,int stated){
+    private StateListDrawable makeDrawable(int normal, int stated) {
         StateListDrawable drawable = new StateListDrawable();
-        if (normal==0||normal<0) return drawable;
-        if (stated==0||stated<0) return drawable;
-        drawable.addState(new int[]{R.attr.state_choose},getResources().getDrawable(stated));
-        drawable.addState(new int[]{},getResources().getDrawable(normal));
+        if (normal == 0 || normal < 0) return drawable;
+        if (stated == 0 || stated < 0) return drawable;
+        drawable.addState(new int[]{R.attr.state_choose}, getResources().getDrawable(stated));
+        drawable.addState(new int[]{}, getResources().getDrawable(normal));
         return drawable;
     }
 
-    private void showFragment(){
-        showFragment(containerViewId,fragments.get(currentPosition));
-    }
-
-    private void showFragment(int containerViewId, Fragment fragment) {
-        if (fragment==null) return;
-        FragmentManager fm = ((Activity) context).getFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
+    private void showFragment() {
+        FragmentTransaction curTransaction = mFragmentManager.beginTransaction();
+        final int itemId = getCurrentPosition();
+        // Do we already have this fragment?
+        String name = makeFragmentName(containerViewId, itemId);
+        Fragment fragment = mFragmentManager.findFragmentByTag(name);
+        if (fragment == null) {
+            fragment = fragments.get(itemId);
+        }
         if (!fragment.isAdded()) {
-            if (preFragment!=null)
-            ft = ft.hide(preFragment);
-            ft.add(containerViewId, fragment, "fragment")
-                    .commit();
+            if (preFragment != null)
+                curTransaction = curTransaction.hide(preFragment);
+            curTransaction.add(containerViewId, fragment, name);
         } else {
             if (fragment.isDetached()) {
-                ft.hide(preFragment).attach(fragment).show(fragment).commit();
-            }else {
-                ft.hide(preFragment).show(fragment).commit();
+                curTransaction.hide(preFragment).attach(fragment).show(fragment);
+            } else {
+                curTransaction.hide(preFragment).show(fragment);
             }
         }
-        if (preFragment!=fragment)
-        preFragment = fragment;
+        curTransaction.commit();
+        if (preFragment != fragment) {
+            preFragment = fragment;
+        }
     }
 
     private void notifyDataChange(TabDataProvider tabDataProvider) {
@@ -225,19 +224,20 @@ public class TabHostView extends LinearLayout{
             addTab(i, tabDataProvider.getTabIconDrawable(i),
                     tabDataProvider.getTabText(i));
         }
-        ((TabItemView) getChildAt(currentPosition)).setChoose(true);
+        ((TabItemView) getChildAt(currentPosition)).setChecked(true);
         invalidate();
     }
 
-    private void notifyDataChange(int[] itemDrawableNormal,int[] itemDrawableChoose,String[] itemStr) {
+    private void notifyDataChange(int[] itemDrawableNormal, int[] itemDrawableChoose, String[] itemStr) {
         removeAllViews();
         for (int i = 0; i < tabCount; i++) {
-            Drawable drawable = makeDrawable(itemDrawableNormal.length>i?itemDrawableNormal[i]:0,itemDrawableChoose.length>i?itemDrawableChoose[i]:0);
-            String itemText = itemStr.length>i?itemStr[i]:"";
+            Drawable drawable = makeDrawable(itemDrawableNormal.length > i ? itemDrawableNormal[i] : 0,
+                    itemDrawableChoose.length > i ? itemDrawableChoose[i] : 0);
+            String itemText = itemStr.length > i ? itemStr[i] : "";
             addTab(i, drawable,
                     itemText);
         }
-        ((TabItemView) getChildAt(currentPosition)).setChoose(true);
+        ((TabItemView) getChildAt(currentPosition)).setChecked(true);
         invalidate();
     }
 
@@ -246,21 +246,28 @@ public class TabHostView extends LinearLayout{
         tab.setFocusable(true);
         tab.setTextSize(tabTextSize);
         tab.setTextColor(tabTextColor != null ? tabTextColor : ColorStateList.valueOf(0xFF000000));
-        if (pageIconDrawable instanceof Integer){
-            tab.setIconResId((Integer) pageIconDrawable);
-        }else if (pageIconDrawable instanceof Drawable){
-            tab.setIconDrawable((Drawable) pageIconDrawable);
+        Drawable drawable = null;
+        if (pageIconDrawable instanceof Integer) {
+            drawable = getResources().getDrawable((Integer) pageIconDrawable);
+        } else if (pageIconDrawable instanceof Drawable) {
+            drawable = (Drawable) pageIconDrawable;
         }
-        tab.setText(TextUtils.isEmpty(pageTitle)==false?pageTitle:"");
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        tab.setCompoundDrawables(null, drawable, null, null);
+        tab.setText(TextUtils.isEmpty(pageTitle) ? "" : pageTitle);
         tab.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (onItemClickListener.onItemClick(tab,i))
-                setCurrentPosition(i);
+                if (onItemClickListener.onItemClick(tab, i))
+                    setCurrentPosition(i);
             }
         });
-        tab.setPadding(0, itemPadding,0,itemPadding);
-        addView(tab,defaultTabLayoutParams);
+        tab.setPadding(0, itemPadding, 0, itemPadding);
+        addView(tab, defaultTabLayoutParams);
+    }
+
+    public int getCurrentPosition() {
+        return currentPosition;
     }
 
     public void setCurrentPosition(int currentPosition) {
@@ -271,47 +278,35 @@ public class TabHostView extends LinearLayout{
 
     /**
      * show red point to the child
+     *
      * @param position
      */
-    public void setPoint(int position){
-        if (position<0||position>tabCount-1) return;
+    public void setPoint(int position) {
+        if (position < 0 || position > tabCount - 1) return;
         TabItemView child = (TabItemView) getChildAt(position);
-        child.setPoint();
     }
 
     /**
      * show unread msg count
+     *
      * @param position
      * @param msgCount
      */
-    public void setMsgCount(int position,int msgCount){
-        if (position<0||position>tabCount-1) return;
+    public void setMsgCount(int position, int msgCount) {
+        if (position < 0 || position > tabCount - 1) return;
         TabItemView child = (TabItemView) getChildAt(position);
-        child.setMsgCount(msgCount);
     }
 
-
-    /**
-     * if the mode is ShowMode.RAISE,then only the choosed item show the text
-     * @param showMode
-     */
-    public void setItemShowMode(TabItemView.ShowMode showMode){
-        int count = fragments.size();
-        for (int i = 0; i < count; i++) {
-            TabItemView child = (TabItemView) getChildAt(i);
-            child.setShowMode(showMode);
-        }
-    }
 
     private void updateChildState(int position) {
         int count = fragments.size();
         for (int i = 0; i < count; i++) {
             TabItemView child = (TabItemView) getChildAt(i);
             if (i == position) {
-                child.setChoose(true);
+                child.setChecked(true);
                 continue;
             }
-            child.setChoose(false);
+            child.setChecked(false);
         }
     }
 
@@ -326,9 +321,9 @@ public class TabHostView extends LinearLayout{
         setTabTextSize();
     }
 
-    private void setTabTextSize(){
-        if (tabCount==0) return;
-        for (int i=0;i<tabCount;i++){
+    private void setTabTextSize() {
+        if (tabCount == 0) return;
+        for (int i = 0; i < tabCount; i++) {
             TabItemView tab = (TabItemView) getChildAt(i);
             tab.setTextSize(tabTextSize);
         }
@@ -339,9 +334,9 @@ public class TabHostView extends LinearLayout{
         setTabTextColor();
     }
 
-    private void setTabTextColor(){
-        if (tabCount==0) return;
-        for (int i=0;i<tabCount;i++){
+    private void setTabTextColor() {
+        if (tabCount == 0) return;
+        for (int i = 0; i < tabCount; i++) {
             TabItemView tab = (TabItemView) getChildAt(i);
             tab.setTextColor(tabTextColor);
         }
@@ -357,8 +352,8 @@ public class TabHostView extends LinearLayout{
         invalidate();
     }
 
-    public void setTopLineHeigh(int topLineHeigh) {
-        this.topLineHeigh = topLineHeigh;
+    public void setTopLineHeight(int topLineHeight) {
+        this.topLineHeight = topLineHeight;
         invalidate();
     }
 
@@ -386,38 +381,6 @@ public class TabHostView extends LinearLayout{
         this.onItemClickListener = onItemClickListener;
     }
 
-    public interface TabDataProvider{
-        /**
-         * return the drawable resId for tab icon
-         * @param position
-         * @return
-         */
-        int getTabIconDrawable(int position);
-
-        /***
-         * get text for tabs
-         * @param position
-         * @return
-         */
-        String getTabText(int position);
-    }
-
-    public interface OnItemClickListener{
-        /**
-         * return true then tab could choose
-         * qq 951882080
-         */
-         boolean onItemClick(View view,int position);
-    }
-
-
-    private class  DefaultOnItemClickListener implements OnItemClickListener{
-        @Override
-        public boolean onItemClick(View view, int position) {
-            return true;
-        }
-    }
-
     @Override
     public void onRestoreInstanceState(Parcelable state) {
         SavedState savedState = (SavedState) state;
@@ -434,8 +397,46 @@ public class TabHostView extends LinearLayout{
         return savedState;
     }
 
+    public interface TabDataProvider {
+        /**
+         * return the drawable resId for tab icon
+         *
+         * @param position
+         * @return
+         */
+        int getTabIconDrawable(int position);
+
+        /***
+         * get text for tabs
+         *
+         * @param position
+         * @return
+         */
+        String getTabText(int position);
+    }
+
+    public interface OnItemClickListener {
+        /**
+         * return true then tab could choose
+         * qq 951882080
+         */
+        boolean onItemClick(View view, int position);
+    }
+
     static class SavedState extends BaseSavedState {
+        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
         int currentPosition;
+
         public SavedState(Parcelable superState) {
             super(superState);
         }
@@ -450,17 +451,12 @@ public class TabHostView extends LinearLayout{
             super.writeToParcel(dest, flags);
             dest.writeInt(currentPosition);
         }
+    }
 
-        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
-            @Override
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
-
-            @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
+    private class DefaultOnItemClickListener implements OnItemClickListener {
+        @Override
+        public boolean onItemClick(View view, int position) {
+            return true;
+        }
     }
 }
