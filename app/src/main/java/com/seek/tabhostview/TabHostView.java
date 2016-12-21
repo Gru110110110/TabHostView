@@ -287,10 +287,14 @@ public class TabHostView extends LinearLayout {
                     setCurrentPosition(i);
             }
         });
+        setTabPadding(tab);
+        addView(tab, defaultTabLayoutParams);
+    }
+
+    private void setTabPadding(TabItemView tab) {
         tab.setPadding(itemPaddingLeft == 0 ? itemPadding : itemPaddingLeft, itemPaddingTop == 0 ? itemPadding :
                 itemPaddingTop, itemPaddingRight == 0 ? itemPadding : itemPaddingRight, itemPaddingBottom == 0 ?
                 itemPadding : itemPaddingBottom);
-        addView(tab, defaultTabLayoutParams);
     }
 
     public int getCurrentPosition() {
@@ -396,11 +400,22 @@ public class TabHostView extends LinearLayout {
         invalidate();
     }
 
-    public void setItemPadding(int itemPadding) {
-        this.itemPadding = itemPadding;
+    public void setTabPadding(int itemPaddingLeft,int itemPaddingTop,int itemPaddingRight,int itemPaddingBottom) {
+        this.itemPaddingLeft = itemPaddingLeft;
+        this.itemPaddingTop = itemPaddingTop;
+        this.itemPaddingRight = itemPaddingRight;
+        this.itemPaddingBottom = itemPaddingBottom;
+        setTabPadding();
     }
 
-    //
+    private void setTabPadding() {
+        if (tabCount == 0) return;
+        for (int i = 0; i < tabCount; i++) {
+            TabItemView tab = (TabItemView) getChildAt(i);
+            setTabPadding(tab);
+        }
+    }
+
     public void refreshTabIcon(int position, Drawable drawable) {
         if (position >= 0 && position < tabCount) {
             TabItemView tab = (TabItemView) getChildAt(position);
@@ -453,7 +468,6 @@ public class TabHostView extends LinearLayout {
     public interface OnItemClickListener {
         /**
          * return true then tab could choose
-         * qq 951882080
          */
         boolean onItemClick(View view, int position);
     }
