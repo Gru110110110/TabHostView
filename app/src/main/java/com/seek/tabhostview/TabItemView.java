@@ -1,6 +1,7 @@
 package com.seek.tabhostview;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.TextView;
@@ -43,5 +44,10 @@ public class TabItemView extends TextView {
             this.checked = checked;
             refreshDrawableState();
         }
+    }
+
+    public void setDrawable(Drawable drawable) {
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        setCompoundDrawables(null, drawable, null, null);
     }
 }

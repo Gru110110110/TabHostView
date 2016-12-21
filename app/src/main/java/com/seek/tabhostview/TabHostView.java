@@ -34,7 +34,8 @@ public class TabHostView extends LinearLayout {
             android.R.attr.textSize,
             android.R.attr.textColor,
             android.R.attr.dividerPadding,
-            android.R.attr.drawablePadding
+            android.R.attr.drawablePadding,
+            android.R.attr.itemPadding
     };
     private final FragmentManager mFragmentManager;
     private Paint dividerPaint;
@@ -46,12 +47,17 @@ public class TabHostView extends LinearLayout {
     private int topLineColor = Color.GRAY;
     private int topLineHeight = 1;
     private int dividerPadding = 5;
+    private int drawablePadding = 0;
     private LayoutParams defaultTabLayoutParams;
     /**
      * If you wanna the divide for tab, you must set it to true
      */
     private boolean dividerEnabled = false;
-    private int itemPadding = 5;
+    private int itemPadding = 0;
+    private int itemPaddingTop = 0;
+    private int itemPaddingLeft = 0;
+    private int itemPaddingRight = 0;
+    private int itemPaddingBottom = 0;
 
     private int currentPosition = 0;
     private List<Fragment> fragments = null;
@@ -69,6 +75,7 @@ public class TabHostView extends LinearLayout {
     @SuppressWarnings("ResourceType")
     public TabHostView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        //just support AppCompatActivity, else throw exception
         mFragmentManager = ((AppCompatActivity) context).getSupportFragmentManager();
         setWillNotDraw(false);
         setOrientation(HORIZONTAL);
@@ -82,6 +89,8 @@ public class TabHostView extends LinearLayout {
         tabTextSize = typedArray.getDimensionPixelSize(0, tabTextSize);
         tabTextColor = typedArray.getColorStateList(1);
         dividerPadding = typedArray.getDimensionPixelSize(2, dividerPadding);
+        drawablePadding = typedArray.getDimensionPixelSize(3, drawablePadding);
+        itemPadding = typedArray.getDimensionPixelSize(4, itemPadding);
         typedArray.recycle();
 
         // get custom attrs
@@ -90,7 +99,12 @@ public class TabHostView extends LinearLayout {
         dividerEnabled = typedArray.getBoolean(R.styleable.TabHostView_dividerEnabled, dividerEnabled);
         dividerColor = typedArray.getColor(R.styleable.TabHostView_dividerColor, dividerColor);
         topLineColor = typedArray.getColor(R.styleable.TabHostView_topLineColor, topLineColor);
-        topLineHeight = typedArray.getDimensionPixelSize(R.styleable.TabHostView_topLineHeigh, topLineHeight);
+        topLineHeight = typedArray.getDimensionPixelSize(R.styleable.TabHostView_topLineHeight, topLineHeight);
+        itemPaddingLeft = typedArray.getDimensionPixelSize(R.styleable.TabHostView_itemPaddingLeft, itemPaddingLeft);
+        itemPaddingTop = typedArray.getDimensionPixelSize(R.styleable.TabHostView_itemPaddingTop, itemPaddingTop);
+        itemPaddingRight = typedArray.getDimensionPixelSize(R.styleable.TabHostView_itemPaddingRight, itemPaddingRight);
+        itemPaddingBottom = typedArray.getDimensionPixelSize(R.styleable.TabHostView_itemPaddingBottom,
+                itemPaddingBottom);
         typedArray.recycle();
 
         dividerPaint = new Paint();
@@ -127,6 +141,8 @@ public class TabHostView extends LinearLayout {
         }
     }
 
+    /***************************************************(create way 1)***********************************************************/
+
     /**
      * another way to create items
      *
@@ -144,6 +160,8 @@ public class TabHostView extends LinearLayout {
         showFragment();
         notifyDataChange(tabDataProvider);
     }
+
+    /***************************************************(create way 2)***********************************************************/
 
     /**
      * step 1
@@ -183,11 +201,13 @@ public class TabHostView extends LinearLayout {
         notifyDataChange(itemDrawableNormal, itemDrawableChoose, itemStr);
     }
 
+
+
     private StateListDrawable makeDrawable(int normal, int stated) {
         StateListDrawable drawable = new StateListDrawable();
         if (normal == 0 || normal < 0) return drawable;
         if (stated == 0 || stated < 0) return drawable;
-        drawable.addState(new int[]{R.attr.state_choose}, getResources().getDrawable(stated));
+        drawable.addState(new int[]{android.R.attr.state_checked}, getResources().getDrawable(stated));
         drawable.addState(new int[]{}, getResources().getDrawable(normal));
         return drawable;
     }
@@ -206,10 +226,12 @@ public class TabHostView extends LinearLayout {
                 curTransaction = curTransaction.hide(preFragment);
             curTransaction.add(containerViewId, fragment, name);
         } else {
+            if (preFragment != null)
+                curTransaction = curTransaction.hide(preFragment);
             if (fragment.isDetached()) {
-                curTransaction.hide(preFragment).attach(fragment).show(fragment);
+                curTransaction.attach(fragment).show(fragment);
             } else {
-                curTransaction.hide(preFragment).show(fragment);
+                curTransaction.show(fragment);
             }
         }
         curTransaction.commit();
@@ -244,16 +266,19 @@ public class TabHostView extends LinearLayout {
     private void addTab(final int i, Object pageIconDrawable, String pageTitle) {
         final TabItemView tab = new TabItemView(getContext());
         tab.setFocusable(true);
+        tab.setCompoundDrawablePadding(drawablePadding);
         tab.setTextSize(tabTextSize);
         tab.setTextColor(tabTextColor != null ? tabTextColor : ColorStateList.valueOf(0xFF000000));
         Drawable drawable = null;
         if (pageIconDrawable instanceof Integer) {
-            drawable = getResources().getDrawable((Integer) pageIconDrawable);
+            int drawableId = (Integer) pageIconDrawable;
+            drawable = getResources().getDrawable(drawableId);
         } else if (pageIconDrawable instanceof Drawable) {
             drawable = (Drawable) pageIconDrawable;
         }
-        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-        tab.setCompoundDrawables(null, drawable, null, null);
+        if (drawable != null) {
+            tab.setDrawable(drawable);
+        }
         tab.setText(TextUtils.isEmpty(pageTitle) ? "" : pageTitle);
         tab.setOnClickListener(new OnClickListener() {
             @Override
@@ -262,7 +287,9 @@ public class TabHostView extends LinearLayout {
                     setCurrentPosition(i);
             }
         });
-        tab.setPadding(0, itemPadding, 0, itemPadding);
+        tab.setPadding(itemPaddingLeft == 0 ? itemPadding : itemPaddingLeft, itemPaddingTop == 0 ? itemPadding :
+                itemPaddingTop, itemPaddingRight == 0 ? itemPadding : itemPaddingRight, itemPaddingBottom == 0 ?
+                itemPadding : itemPaddingBottom);
         addView(tab, defaultTabLayoutParams);
     }
 
@@ -371,6 +398,14 @@ public class TabHostView extends LinearLayout {
 
     public void setItemPadding(int itemPadding) {
         this.itemPadding = itemPadding;
+    }
+
+    //
+    public void refreshTabIcon(int position, Drawable drawable) {
+        if (position >= 0 && position < tabCount) {
+            TabItemView tab = (TabItemView) getChildAt(position);
+            tab.setDrawable(drawable);
+        }
     }
 
     public OnItemClickListener getOnItemClickListener() {

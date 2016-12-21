@@ -1,9 +1,10 @@
 package com.seek.tabhostview;
 
 import android.os.Bundle;
+
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.app.AppCompatActivity;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +28,8 @@ public class MainActivity extends AppCompatActivity implements TabHostView.TabDa
 //                .tab_discover_nom, R.drawable.tab_me_nom},
 //                new int[]{R.drawable.tab_cap_sel, R.drawable.tab_discover_sel, R.drawable.tab_me_sel}, getResources()
 //                        .getStringArray(R.array.tabStrs)).createItems();
-        tabHostView.addFragments(R.id.container, fragments,this);
-        tabHostView.setTabTextSize(14);
+        tabHostView.addFragments(R.id.container, fragments, this);
+        tabHostView.setTabTextSize(12);
     }
 
     @Override

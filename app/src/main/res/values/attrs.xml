@@ -6,5 +6,9 @@
         <attr name="dividerEnabled" format="boolean"></attr>
         <attr name="topLineColor" format="color"></attr>
         <attr name="topLineHeight" format="dimension"></attr>
+        <attr name="itemPaddingLeft" format="dimension"></attr>
+        <attr name="itemPaddingRight" format="dimension"></attr>
+        <attr name="itemPaddingTop" format="dimension"></attr>
+        <attr name="itemPaddingBottom" format="dimension"></attr>
         </declare-styleable>
 </resources>
