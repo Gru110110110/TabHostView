@@ -6,7 +6,8 @@ public class Circle {
     float mCenterX, mCenterY;
     float mRadius;
 
-    Circle() {}
+    Circle() {
+    }
 
     Circle(float centerX, float centerY, float radius) {
         mCenterX = centerX;
@@ -36,8 +37,9 @@ public class Circle {
         return new Rect(Math.round(mCenterX - mRadius), Math.round(mCenterY - mRadius),
                 Math.round(mCenterX + mRadius), Math.round(mCenterY + mRadius));
     }
+
     @Override
     public String toString() {
-        return "Radius: " + mRadius + " X: " + mCenterX +  " Y: " + mCenterY;
+        return "Radius: " + mRadius + " X: " + mCenterX + " Y: " + mCenterY;
     }
 }

@@ -141,7 +141,9 @@ public class TabHostView extends LinearLayout {
         }
     }
 
-    /***************************************************(create way 1)***********************************************************/
+    /***************************************************
+     * (create way 1)
+     * ***********************************************************/
 
     /**
      * another way to create items
@@ -161,7 +163,9 @@ public class TabHostView extends LinearLayout {
         notifyDataChange(tabDataProvider);
     }
 
-    /***************************************************(create way 2)***********************************************************/
+    /***************************************************
+     * (create way 2)
+     * ***********************************************************/
 
     /**
      * step 1
@@ -200,7 +204,6 @@ public class TabHostView extends LinearLayout {
         showFragment();
         notifyDataChange(itemDrawableNormal, itemDrawableChoose, itemStr);
     }
-
 
 
     private StateListDrawable makeDrawable(int normal, int stated) {
@@ -283,8 +286,9 @@ public class TabHostView extends LinearLayout {
         tab.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (onItemClickListener.onItemClick(tab, i))
+                if (onItemClickListener.onItemClick(tab, i)) {
                     setCurrentPosition(i);
+                }
             }
         });
         setTabPadding(tab);
@@ -302,19 +306,33 @@ public class TabHostView extends LinearLayout {
     }
 
     public void setCurrentPosition(int currentPosition) {
-        this.currentPosition = currentPosition;
-        showFragment();
-        updateChildState(currentPosition);
+        if (this.currentPosition != currentPosition) {
+            this.currentPosition = currentPosition;
+            showFragment();
+            updateChildState(currentPosition);
+        }
     }
 
     /**
-     * show red point to the child
+     * show the circle point to the child
      *
      * @param position
      */
-    public void setPoint(int position) {
+    public void showCirclePoint(int position) {
         if (position < 0 || position > tabCount - 1) return;
         TabItemView child = (TabItemView) getChildAt(position);
+        child.drawCirclePoint();
+    }
+
+    /**
+     * clear the circle point to the child
+     *
+     * @param position
+     */
+    public void clearCirclePoint(int position) {
+        if (position < 0 || position > tabCount - 1) return;
+        TabItemView child = (TabItemView) getChildAt(position);
+        child.clearCirclePoint();
     }
 
     /**
@@ -323,11 +341,23 @@ public class TabHostView extends LinearLayout {
      * @param position
      * @param msgCount
      */
-    public void setMsgCount(int position, int msgCount) {
-        if (position < 0 || position > tabCount - 1) return;
-        TabItemView child = (TabItemView) getChildAt(position);
+    public void showMsgCount(int position, int msgCount) {
+        showMsgCount(position, msgCount, 0);
     }
 
+    /**
+     * show unread msg count and give a background color
+     *
+     * @param position
+     * @param msgCount
+     * @param color
+     */
+    public void showMsgCount(int position, int msgCount, int color) {
+        if (position < 0 || position > tabCount - 1) return;
+        TabItemView child = (TabItemView) getChildAt(position);
+        if (color != 0) child.setMsgBackgroundColor(color);
+        child.drawMsg(msgCount);
+    }
 
     private void updateChildState(int position) {
         int count = fragments.size();
@@ -347,6 +377,11 @@ public class TabHostView extends LinearLayout {
             invalidate();
     }
 
+    /**
+     * set tab item text size
+     *
+     * @param tabTextSize
+     */
     public void setTabTextSize(int tabTextSize) {
         this.tabTextSize = tabTextSize;
         setTabTextSize();
@@ -359,6 +394,75 @@ public class TabHostView extends LinearLayout {
             tab.setTextSize(tabTextSize);
         }
     }
+
+    /**
+     * set circle point radius
+     *
+     * @param circlePointRadius
+     */
+    public void setCirclePointRadius(float circlePointRadius) {
+        setAllTabCirclePointRadius(circlePointRadius);
+    }
+
+    private void setAllTabCirclePointRadius(float circlePointRadius) {
+        if (tabCount == 0) return;
+        for (int i = 0; i < tabCount; i++) {
+            TabItemView tab = (TabItemView) getChildAt(i);
+            tab.setCirclePointRadius(circlePointRadius);
+        }
+    }
+
+    /**
+     * set circle point color
+     *
+     * @param circlePointColor
+     */
+    public void setCirclePointColor(int circlePointColor) {
+        setAllTabCirclePointColor(circlePointColor);
+    }
+
+    private void setAllTabCirclePointColor(int circlePointColor) {
+        if (tabCount == 0) return;
+        for (int i = 0; i < tabCount; i++) {
+            TabItemView tab = (TabItemView) getChildAt(i);
+            tab.setCirclePointColor(circlePointColor);
+        }
+    }
+
+    /**
+     * set unread msg text color
+     *
+     * @param msgTextColor
+     */
+    public void setMsgTextColor(int msgTextColor) {
+        setAllTabMsgTextColor(msgTextColor);
+    }
+
+    private void setAllTabMsgTextColor(int msgTextColor) {
+        if (tabCount == 0) return;
+        for (int i = 0; i < tabCount; i++) {
+            TabItemView tab = (TabItemView) getChildAt(i);
+            tab.setMsgTextColor(msgTextColor);
+        }
+    }
+
+    /**
+     * set unread msg text size
+     *
+     * @param msgTextSize
+     */
+    public void setMsgTextSize(float msgTextSize) {
+        setAllTabMsgTextSize(msgTextSize);
+    }
+
+    private void setAllTabMsgTextSize(float msgTextSize) {
+        if (tabCount == 0) return;
+        for (int i = 0; i < tabCount; i++) {
+            TabItemView tab = (TabItemView) getChildAt(i);
+            tab.setMsgTextSize(msgTextSize);
+        }
+    }
+
 
     public void setTabTextColor(int tabTextColorId) {
         this.tabTextColor = getResources().getColorStateList(tabTextColorId);
@@ -400,7 +504,7 @@ public class TabHostView extends LinearLayout {
         invalidate();
     }
 
-    public void setTabPadding(int itemPaddingLeft,int itemPaddingTop,int itemPaddingRight,int itemPaddingBottom) {
+    public void setTabPadding(int itemPaddingLeft, int itemPaddingTop, int itemPaddingRight, int itemPaddingBottom) {
         this.itemPaddingLeft = itemPaddingLeft;
         this.itemPaddingTop = itemPaddingTop;
         this.itemPaddingRight = itemPaddingRight;
@@ -416,6 +520,7 @@ public class TabHostView extends LinearLayout {
         }
     }
 
+    // you could change the tab icon by this method
     public void refreshTabIcon(int position, Drawable drawable) {
         if (position >= 0 && position < tabCount) {
             TabItemView tab = (TabItemView) getChildAt(position);
