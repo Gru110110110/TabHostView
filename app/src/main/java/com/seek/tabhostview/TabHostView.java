@@ -540,8 +540,7 @@ public class TabHostView extends LinearLayout {
     public void onRestoreInstanceState(Parcelable state) {
         SavedState savedState = (SavedState) state;
         super.onRestoreInstanceState(savedState.getSuperState());
-        currentPosition = savedState.currentPosition;
-        requestLayout();
+        setCurrentPosition(savedState.currentPosition);
     }
 
     @Override
